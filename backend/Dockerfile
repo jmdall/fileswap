@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Installer ffmpeg pour la génération de previews vidéo
+RUN apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 # Copier les fichiers de dépendances
