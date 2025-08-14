@@ -228,13 +228,29 @@ export default async function sessionRoutes(app) {
         
         // Générer token de download pour mon fichier
         if (myFileResult.rows[0]) {
-          const downloadToken = generateDownloadToken(myFileResult.rows[0].id, auth.participantId);
+          const downloadToken = jwt.sign(
+            {
+              fileId: myFileResult.rows[0].id,
+              sessionId: sessionId,
+              participantId: auth.participantId,
+              exp: Math.floor(Date.now() / 1000) + 600 // 10 minutes
+            },
+            config.security.jwtSecret
+          );
           downloadUrls[auth.role] = `/api/uploads/download/${myFileResult.rows[0].id}?token=${downloadToken}`;
         }
         
         // Générer token de download pour le fichier peer
         if (peerFileResult.rows[0]) {
-          const downloadToken = generateDownloadToken(peerFileResult.rows[0].id, auth.participantId);
+          const downloadToken = jwt.sign(
+            {
+              fileId: peerFileResult.rows[0].id,
+              sessionId: sessionId,
+              participantId: auth.participantId,
+              exp: Math.floor(Date.now() / 1000) + 600 // 10 minutes
+            },
+            config.security.jwtSecret
+          );
           downloadUrls[peerFileResult.rows[0].role] = `/api/uploads/download/${peerFileResult.rows[0].id}?token=${downloadToken}`;
         }
         
