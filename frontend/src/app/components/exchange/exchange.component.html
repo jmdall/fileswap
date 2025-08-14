@@ -1,0 +1,200 @@
+<div class="container">
+  <!-- Header with session info -->
+  <div class="session-header">
+    <h1>🔒 Session d'échange</h1>
+    <div class="session-meta">
+      <span class="role-badge" [class.role-a]="role === 'A'" [class.role-b]="role === 'B'">
+        Participant {{role}}
+      </span>
+      <span class="state-badge" [class]="'state-' + sessionState">
+        {{sessionState}}
+      </span>
+      <span class="timer" *ngIf="expiresAt">
+        ⏱️ {{getTimeRemaining()}}
+      </span>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{successMessage}}
+  </div>
+  
+  <div class="alert alert-info" *ngIf="statusMessage">
+    {{statusMessage}}
+  </div>
+  
+  <div class="alert alert-danger" *ngIf="errorMessage">
+    {{errorMessage}}
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main content grid -->
+  <div class="exchange-grid">
+    <!-- My file section -->
+    <div class="file-section">
+      <div class="card">
+        <h2>📁 Mon fichier</h2>
+        
+        <!-- Upload zone -->
+        <div *ngIf="!myFile" 
+             class="file-upload"
+             [class.dragging]="isDragging"
+             (click)="fileInput.click()"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          <div class="upload-icon">⬆️</div>
+          <p>Cliquez ou glissez votre fichier ici</p>
+          <p class="upload-hint">Max 2 GB • Tous formats acceptés</p>
+          <input #fileInput 
+                 type="file" 
+                 style="display: none"
+                 (change)="onFileSelect($event)">
+        </div>
+        
+        <!-- Upload progress -->
+        <div *ngIf="isUploading" class="upload-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+          </div>
+          <p class="text-center">Upload: {{uploadProgress}}%</p>
+        </div>
+        
+        <!-- File info -->
+        <div *ngIf="myFile" class="file-info">
+          <div class="file-icon">📄</div>
+          <div class="file-details">
+            <h3>{{myFile.filename}}</h3>
+            <p>Taille: {{formatFileSize(myFile.size)}}</p>
+            <p>
+              Statut: 
+              <span [class]="getStatusClass(myFile.status)">
+                {{getStatusText(myFile.status)}}
+              </span>
+            </p>
+            <p *ngIf="iAccepted" class="accepted-badge">
+              ✅ Vous avez accepté l'échange
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peer file section -->
+    <div class="file-section">
+      <div class="card">
+        <h2>🔍 Fichier de l'autre participant</h2>
+        
+        <!-- Waiting state -->
+        <div *ngIf="!peerFile" class="waiting-peer">
+          <div class="waiting-icon">⏳</div>
+          <p>En attente du fichier...</p>
+        </div>
+        
+        <!-- Peer file info -->
+        <div *ngIf="peerFile" class="file-info">
+          <div class="file-icon">📄</div>
+          <div class="file-details">
+            <h3>{{peerFile.filename}}</h3>
+            <p>Taille: {{formatFileSize(peerFile.size)}}</p>
+            <p>Type: {{peerFile.mimeType}}</p>
+            <p>
+              Statut: 
+              <span [class]="getStatusClass(peerFile.status)">
+                {{getStatusText(peerFile.status)}}
+              </span>
+            </p>
+            <div *ngIf="peerFile.sha256" class="hash-info">
+              <p>SHA-256:</p>
+              <code>{{peerFile.sha256?.substring(0, 32)}}...</code>
+            </div>
+            <p *ngIf="peerAccepted" class="accepted-badge">
+              ✅ L'autre participant a accepté
+            </p>
+          </div>
+          
+          <!-- Preview if available -->
+          <div *ngIf="peerFile.previewUrl && peerFile.status === 'ready'" class="file-preview">
+            <p class="preview-label">Aperçu :</p>
+            <img [src]="getPreviewUrl(peerFile.previewUrl)" 
+                 alt="Aperçu du fichier"
+                 (error)="onPreviewError($event)">
+            <p class="preview-note">Aperçu limité - Le fichier complet sera disponible après validation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-section" *ngIf="sessionState === 'ready'">
+    <div class="card">
+      <h2>Validation de l'échange</h2>
+      <p>Les deux fichiers sont prêts. Vérifiez les informations ci-dessus avant d'accepter.</p>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary btn-large" 
+                (click)="acceptExchange()" 
+                [disabled]="!canAccept() || iAccepted || isLoading">
+          <span *ngIf="!iAccepted">✅ Accepter l'échange</span>
+          <span *ngIf="iAccepted">✓ Accepté</span>
+        </button>
+        
+        <button class="btn btn-danger" 
+                (click)="rejectExchange()"
+                [disabled]="iAccepted || isLoading">
+          ❌ Refuser l'échange
+        </button>
+      </div>
+      
+      <div class="validation-status">
+        <div class="validation-item" [class.validated]="iAccepted">
+          <span class="validation-icon">{{iAccepted ? '✅' : '⭕'}}</span>
+          <span>Votre validation</span>
+        </div>
+        <div class="validation-item" [class.validated]="peerAccepted">
+          <span class="validation-icon">{{peerAccepted ? '✅' : '⭕'}}</span>
+          <span>Validation de l'autre participant</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download section -->
+  <div class="download-section" *ngIf="sessionState === 'released' && downloadUrls">
+    <div class="card success-card">
+      <h2>🎉 Échange validé avec succès !</h2>
+      <p>Les deux parties ont accepté l'échange. Vous pouvez maintenant télécharger les fichiers.</p>
+      
+      <div class="download-buttons">
+        <button class="btn btn-success btn-large" (click)="downloadFile('mine')">
+          ⬇️ Télécharger mon fichier
+        </button>
+        <button class="btn btn-success btn-large" (click)="downloadFile('peer')">
+          ⬇️ Télécharger le fichier reçu
+        </button>
+      </div>
+      
+      <p class="download-warning">
+        ⚠️ Les liens de téléchargement expirent dans 10 minutes
+      </p>
+    </div>
+  </div>
+
+  <!-- Cancelled state -->
+  <div *ngIf="sessionState === 'cancelled'" class="card error-card">
+    <h2>❌ Échange annulé</h2>
+    <p>L'échange a été annulé. Les fichiers ont été supprimés.</p>
+  </div>
+
+  <!-- Expired state -->
+  <div *ngIf="sessionState === 'expired'" class="card error-card">
+    <h2>⏱️ Session expirée</h2>
+    <p>La session a expiré. Les fichiers ont été supprimés.</p>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+# Variables d'environnement - JAMAIS SUR GITHUB !
+.env
+.env.local
+.env.production
+*.env
+
+# Dépendances
+node_modules/
+*/node_modules/
+
+# Build
+build/
+dist/
+*/build/
+*/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Données sensibles
+*.pem
+*.key
+*.cert
+*.p12
+
+# Uploads temporaires
+backend/temp/
+backend/uploads/
+uploads/
+temp/
+
+# Base de données locale
+*.sqlite
+*.db
+
+# Backups
+*.backup
+*.sql
+backups/
+
+# Coverage
+coverage/
+.nyc_output/

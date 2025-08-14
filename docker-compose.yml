@@ -1,0 +1,111 @@
+# Core services for Secure File Exchange
+# For development with app services, use: docker-compose --profile dev up
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: sfe-postgres
+    environment:
+      POSTGRES_DB: file_exchange
+      POSTGRES_USER: exchange_user
+      POSTGRES_PASSWORD: exchange_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - exchange-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exchange_user -d file_exchange"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sfe-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - exchange-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio
+    container_name: sfe-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - exchange-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Development profile - includes app containers
+  backend:
+    build: ./backend
+    container_name: sfe-backend
+    profiles: ["dev"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://exchange_user:exchange_pass@postgres:5432/file_exchange
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: file-exchange
+      JWT_SECRET: your-secret-key-change-this-in-production
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - exchange-network
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    container_name: sfe-frontend
+    profiles: ["dev"]
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - exchange-network
+    command: ng serve --host 0.0.0.0
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  exchange-network:
+    driver: bridge

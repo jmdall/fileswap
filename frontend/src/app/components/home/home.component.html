@@ -1,0 +1,134 @@
+<div class="container">
+  <div class="hero-section">
+    <h1>🔒 Échange Sécurisé de Fichiers</h1>
+    <p class="subtitle">
+      Échangez vos fichiers en toute sécurité avec un système de double validation.
+      Les deux parties doivent accepter l'échange avant de pouvoir télécharger les fichiers.
+    </p>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🔐</div>
+      <h3>Sécurisé</h3>
+      <p>Chiffrement et validation double</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">✅</div>
+      <h3>Validation mutuelle</h3>
+      <p>Les deux parties doivent accepter</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⏱️</div>
+      <h3>Temporaire</h3>
+      <p>Sessions limitées à 48h</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔍</div>
+      <h3>Aperçu</h3>
+      <p>Visualisez les métadonnées avant d'accepter</p>
+    </div>
+  </div>
+
+  <div class="action-section" *ngIf="!sessionCreated">
+    <h2>Commencer un échange</h2>
+    <p>Créez une nouvelle session d'échange et partagez les liens avec votre partenaire.</p>
+    
+    <button 
+      class="btn btn-primary btn-large" 
+      (click)="createSession()"
+      [disabled]="isCreating">
+      <span *ngIf="!isCreating">🚀 Créer une session d'échange</span>
+      <span *ngIf="isCreating">⏳ Création en cours...</span>
+    </button>
+
+    <div class="alert alert-danger" *ngIf="error">
+      {{error}}
+    </div>
+  </div>
+
+  <div class="session-created" *ngIf="sessionCreated && sessionData">
+    <div class="alert alert-success">
+      ✅ Session créée avec succès !
+    </div>
+
+    <div class="session-info">
+      <h2>Session d'échange créée</h2>
+      <p class="session-id">ID: <code>{{sessionData.sessionId}}</code></p>
+      <p class="expires">Expire le: {{sessionData.expiresAt | date:'medium':'fr-FR'}}</p>
+    </div>
+
+    <div class="invites">
+      <h3>Liens d'invitation</h3>
+      <p class="mb-3">Partagez ces liens avec les participants :</p>
+
+      <div class="invite-card">
+        <h4>👤 Participant A</h4>
+        <div class="link-box">
+          <code>{{location.origin}}/exchange?sid={{sessionData.sessionId}}&token={{sessionData.invites.A.token}}</code>
+        </div>
+        <div class="link-actions">
+          <button class="btn btn-sm" (click)="copyLink('A')">📋 Copier</button>
+          <button class="btn btn-sm" (click)="openInNewTab('A')">🔗 Ouvrir</button>
+        </div>
+      </div>
+
+      <div class="invite-card">
+        <h4>👤 Participant B</h4>
+        <div class="link-box">
+          <code>{{location.origin}}/exchange?sid={{sessionData.sessionId}}&token={{sessionData.invites.B.token}}</code>
+        </div>
+        <div class="link-actions">
+          <button class="btn btn-sm" (click)="copyLink('B')">📋 Copier</button>
+          <button class="btn btn-sm" (click)="openInNewTab('B')">🔗 Ouvrir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <h3>📝 Instructions</h3>
+      <ol>
+        <li>Partagez chaque lien avec le participant correspondant</li>
+        <li>Chaque participant doit uploader son fichier</li>
+        <li>Une fois les deux fichiers prêts, les métadonnées seront visibles</li>
+        <li>Les deux participants doivent accepter l'échange</li>
+        <li>Après la double validation, les fichiers peuvent être téléchargés</li>
+      </ol>
+    </div>
+
+    <button class="btn btn-primary mt-4" (click)="createSession()">
+      🔄 Créer une nouvelle session
+    </button>
+  </div>
+
+  <div class="how-it-works">
+    <h2>Comment ça marche ?</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h4>Créer une session</h4>
+        <p>Générez deux liens uniques pour les participants</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h4>Uploader les fichiers</h4>
+        <p>Chaque participant upload son fichier</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h4>Vérifier</h4>
+        <p>Consultez les métadonnées et l'aperçu</p>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <h4>Valider</h4>
+        <p>Les deux parties acceptent l'échange</p>
+      </div>
+      <div class="step">
+        <div class="step-number">5</div>
+        <h4>Télécharger</h4>
+        <p>Récupérez les fichiers échangés</p>
+      </div>
+    </div>
+  </div>
+</div>
