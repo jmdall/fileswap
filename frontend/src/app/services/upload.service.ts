@@ -171,7 +171,7 @@ export class UploadComponent {
     const file = input.files[0];
     
     // Validation
-    if (file.size > 100 * 1024 * 1024) { // 100MB
+    if (file.size > 10 * 1024 * 1024 * 1024) { // 10GB
       alert('File too large!');
       return;
     }

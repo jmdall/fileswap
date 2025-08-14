@@ -163,9 +163,9 @@ export class ExchangeComponent implements OnInit, OnDestroy {
   
   handleFile(file: File) {
     // Check file size
-    const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
+    const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
     if (file.size > maxSize) {
-      this.errorMessage = 'Fichier trop volumineux (max 2GB)';
+      this.errorMessage = 'Fichier trop volumineux (max 10GB)';
       return;
     }
     

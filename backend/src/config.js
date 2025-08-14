@@ -34,7 +34,7 @@ export default {
   security: {
     jwtSecret: process.env.JWT_SECRET,
     sessionExpiryHours: parseInt(process.env.SESSION_EXPIRY_HOURS || '48'),
-    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '2147483648')
+    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10737418240')
   },
   
   clamav: {
