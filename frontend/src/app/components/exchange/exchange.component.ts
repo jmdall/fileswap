@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ExchangeService } from '../../services/exchange.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { Subscription } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-exchange',
@@ -291,7 +292,7 @@ export class ExchangeComponent implements OnInit, OnDestroy {
       this.downloadUrls[this.role === 'A' ? 'B' : 'A'];
     
     // Add base URL if needed
-    const fullUrl = url.startsWith('http') ? url : `http://localhost:3000${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${environment.apiUrl}${url}`;
     window.open(fullUrl, '_blank');
   }
   
