@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -16,15 +17,16 @@ export class WebSocketService {
     // Close existing connection if any
     this.disconnect();
     
-    // Build WebSocket URL
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.hostname;
-    const port = window.location.port || (protocol === 'wss:' ? '443' : '80');
-    const wsUrl = `${protocol}//${host}:${port}/ws?token=${token}`;
+    // Build WebSocket URL based on environment
+    let finalUrl: string;
     
-    // For development, use direct backend URL
-    const isDev = window.location.hostname === 'localhost';
-    const finalUrl = isDev ? `ws://localhost:3000/ws?token=${token}` : wsUrl;
+    if (environment.production) {
+      // In production, use the configured WebSocket URL
+      finalUrl = `${environment.wsUrl}/ws?token=${token}`;
+    } else {
+      // In development, use local URL
+      finalUrl = `${environment.wsUrl}/ws?token=${token}`;
+    }
     
     console.log('Connecting to WebSocket:', finalUrl);
     
