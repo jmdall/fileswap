@@ -221,6 +221,25 @@ export default async function sessionRoutes(app) {
           accepted: participants[auth.role === 'A' ? 'B' : 'A']?.accepted || false
         }
       };
+
+      // Si la session est released, ajouter les URLs de téléchargement
+      if (session.state === 'released') {
+        const downloadUrls = {};
+        
+        // Générer token de download pour mon fichier
+        if (myFileResult.rows[0]) {
+          const downloadToken = generateDownloadToken(myFileResult.rows[0].id, auth.participantId);
+          downloadUrls[auth.role] = `/api/uploads/download/${myFileResult.rows[0].id}?token=${downloadToken}`;
+        }
+        
+        // Générer token de download pour le fichier peer
+        if (peerFileResult.rows[0]) {
+          const downloadToken = generateDownloadToken(peerFileResult.rows[0].id, auth.participantId);
+          downloadUrls[peerFileResult.rows[0].role] = `/api/uploads/download/${peerFileResult.rows[0].id}?token=${downloadToken}`;
+        }
+        
+        response.downloadUrls = downloadUrls;
+      }
       
       reply.send(response);
     } catch (error) {

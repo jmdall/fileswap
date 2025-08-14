@@ -115,6 +115,11 @@ export class ExchangeComponent implements OnInit, OnDestroy {
       this.iAccepted = status.me.accepted;
       this.peerAccepted = status.peer.accepted;
       
+      // Si la session est released, récupérer les URLs de téléchargement
+      if (status.session.state === 'released' && status.downloadUrls) {
+        this.downloadUrls = status.downloadUrls;
+      }
+      
       // Log pour debug
       if (this.peerFile) {
         console.log('Peer file info:', this.peerFile);
