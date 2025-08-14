@@ -7,8 +7,9 @@
 # Dépendances
 node_modules/
 */node_modules/
-
+.claude
 # Build
+frontend/.angular
 build/
 dist/
 */build/
