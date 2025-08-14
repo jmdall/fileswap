@@ -339,20 +339,25 @@ export async function generatePreview(buffer, mimeType, filename) {
                     })
                     .toBuffer();
 
-                // Create a watermark overlay for images
+                // Get actual dimensions of the thumbnail
+                const thumbnailMetadata = await sharp(thumbnailBuffer).metadata();
+                const thumbWidth = thumbnailMetadata.width;
+                const thumbHeight = thumbnailMetadata.height;
+
+                // Create a watermark overlay that matches the thumbnail dimensions
                 const watermarkText = Buffer.from(
-                    `<svg width="256" height="256">
+                    `<svg width="${thumbWidth}" height="${thumbHeight}">
             <defs>
               <style>
                 .watermark { 
                   fill: rgba(255, 255, 255, 0.7); 
-                  font-size: 48px; 
+                  font-size: ${Math.min(thumbWidth, thumbHeight) * 0.2}px; 
                   font-weight: bold;
                   font-family: Arial, sans-serif;
                 }
                 .watermark-bg { 
                   fill: rgba(0, 0, 0, 0.3); 
-                  font-size: 48px; 
+                  font-size: ${Math.min(thumbWidth, thumbHeight) * 0.2}px; 
                   font-weight: bold;
                   font-family: Arial, sans-serif;
                 }
@@ -360,10 +365,10 @@ export async function generatePreview(buffer, mimeType, filename) {
             </defs>
             <!-- Shadow/background text -->
             <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" 
-                  class="watermark-bg" transform="translate(2, 2) rotate(-30 128 128)">PREVIEW</text>
+                  class="watermark-bg" transform="translate(2, 2) rotate(-30 ${thumbWidth/2} ${thumbHeight/2})">PREVIEW</text>
             <!-- Main text -->
             <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" 
-                  class="watermark" transform="rotate(-30 128 128)">PREVIEW</text>
+                  class="watermark" transform="rotate(-30 ${thumbWidth/2} ${thumbHeight/2})">PREVIEW</text>
           </svg>`
                 );
 
